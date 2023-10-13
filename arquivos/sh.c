@@ -22,6 +22,7 @@
 
 #define MAXARGS 10
 #define PATH "/bin/"
+#define PREFIX "./"
 
 /* Todos comandos tem um tipo.  Depois de olhar para o tipo do
  * comando, o código converte um *cmd para o tipo específico de
@@ -84,40 +85,29 @@ void runcmd(struct cmd *cmd)
 
     char *program_name = strcat(path, ecmd->argv[0]);
     execv(program_name, ecmd->argv);
-
-    // pid_t forkrank = fork();
-    // if (forkrank == -1)
-    // {
-    //   printf("Erro na execucao %d\n", getpid());
-    //   return;
-    // }
-    // if (forkrank == 0) // filho
-    // {
-
-    // }
     break;
 
   case '>':
   case '<':
     rcmd = (struct redircmd *)cmd;
-    /* MARK START task3
-     * TAREFA3: Implemente codigo abaixo para executar
-     * comando com redirecionamento. */
-    int fd = creat(rcmd->file, rcmd->mode);
+
+    int fd = open(rcmd->file, rcmd->mode);
     if (fd == -1)
     {
-      fprintf(stderr, "Erro ao abrir arquivo de redirecionamento %d \n", rcmd->mode);
+      fprintf(stderr, "Erro ao abrir arquivo de redirecionamento\n");
       fprintf(stderr, "%d \n", errno);
       return;
     }
 
-    int _fd_dup = dup2(fd, STDOUT_FILENO);
-    close(fd);
-    if (_fd_dup != STDOUT_FILENO)
+    int file_descriptor = !(rcmd->mode == O_RDONLY);
+
+    int _fd_dup = dup2(fd, file_descriptor);
+    if (_fd_dup < 0)
     {
       fprintf(stderr, "Failed to redirect command input.\n");
       return;
     }
+    close(fd);
     /* MARK END task3 */
     runcmd(rcmd->cmd);
     // }
@@ -125,11 +115,33 @@ void runcmd(struct cmd *cmd)
 
   case '|':
     pcmd = (struct pipecmd *)cmd;
-    /* MARK START task4
-     * TAREFA4: Implemente codigo abaixo para executar
-     * comando com pipes. */
-    fprintf(stderr, "pipe nao implementado\n");
-    /* MARK END task4 */
+
+    int pipefd[2];
+    if (pipe(pipefd) == -1)
+    {
+      perror("pipe");
+      return;
+    }
+
+    if (fork() == 0)
+    {
+      /* Redirect output of process into pipe */
+      close(STDOUT_FILENO);
+      close(pipefd[0]);
+      dup2(pipefd[1], STDOUT_FILENO);
+      runcmd(pcmd->left);
+    }
+    if (fork() == 0)
+    {
+      /* Redirect input of process out of pipe */
+      close(STDIN_FILENO);
+      close(pipefd[1]);
+      dup2(pipefd[0], STDIN_FILENO);
+      runcmd(pcmd->right);
+    }
+    close(pipefd[0]);
+    close(pipefd[1]);
+    wait(NULL);
     break;
   }
   exit(0);
