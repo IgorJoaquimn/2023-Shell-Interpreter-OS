@@ -106,7 +106,7 @@ void print_table(){
   }
 }
 
-void mysignal(){
+void my_signal(){
 
     char buffer[1024];
     int signal_handler = 0;
@@ -126,17 +126,13 @@ void mysignal(){
             fgets(buffer,1024,stdin);
             char *token = strtok(buffer, " "); 
 
-            if (token != NULL) {
-                int pid = atoi(token); 
-                token = strtok(NULL, " "); 
-                
-                if (token != NULL) {
-
-                    // Envia o sinal e mata o processo
-                    int signal_num = atoi(token); 
-                    int result = kill(pid, signal_num);
-                }
-            } 
+            int pid = atoi(token); 
+            token = strtok(NULL, " "); 
+            
+            // Envia o sinal e mata o processo
+            int signal_num = atoi(token); 
+            int result = kill(pid, signal_num);
+            
             signal_handler = 0;
         }
         pthread_mutex_unlock(&tela);
@@ -147,9 +143,9 @@ void mysignal(){
 int main() {
 
     // Cria threads para atualizar a tabela e enviar sinais 
-    
+
     pthread_create(&table,NULL,(void *) print_table, NULL);
-    pthread_create(&keyboard,NULL,(void *) mysignal, NULL);
+    pthread_create(&keyboard,NULL,(void *) my_signal, NULL);
     pthread_join(table,NULL);
 
     return 0;

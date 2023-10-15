@@ -14,14 +14,35 @@ grupo.  Substitua XX pela contribuição de cada membro do grupo no
 desenvolvimento do trabalho.
 
 Nome <email@domain.br> XX%
-Nome <email@domain.br> XX%
-Nome <email@domain.br> XX%
+Nome <giovana2ma@gmail.com> XX%
 
 3. Referências bibliográficas
 
-Adicione aqui as referências bibliográficas.
+https://man7.org/linux/man-pages/man5/proc.5.html
+https://www.youtube.com/watch?v=CxcXSiw6XUg
+https://blog.4linux.com.br/conheca-kernel-linux-pelo-proc-parte-1/#:~:text=O%20%E2%80%9C%2Fproc%E2%80%9D%20ou%20%E2%80%9C,Linux%20em%20formato%20de%20arquivos.
+https://linux.die.net/man/2/kill
 
 4. Estruturas de dados
 
-Descreva e justifique as estruturas de dados e algoritmos utilizados
-em sua solução.
+O código fornecido em meutop.c é uma implementação simplificada do htop, ferramenta 
+de monitoramento de processos em sistemas Unix/Linux. Nesta implementação, threads são usadas 
+para atualizar a tabela de processos e permitir que o usuário envie sinais para processos em execução.
+
+A estrutura do código é dividida em três threads principais: a thread de print_table, 
+que atualiza a tabela de processos, a thread de mysignal, que permite o envio de sinais para processos, 
+e a função main, que coordena as threads.
+
+A thread de print_table é responsável por atualizar a tabela de processos. 
+A cada segundo, ela bloqueia o mutex tela para evitar conflitos de acesso à tela, limpa a tela do terminal, 
+imprime um cabeçalho para a tabela e, em seguida, abre o diretório /proc para listar processos. 
+Ela lê informações dos processos, como PID, nome do usuário, nome do processo e estado, 
+a partir dos arquivos em /proc. Essas informações são exibidas na tela, e a tabela é atualizada continuamente. 
+Após a atualização, o mutex é liberado para permitir que outras threads acessem a tela.
+
+A thread de mysignal permite ao usuário enviar sinais para processos em execução. 
+Ela aguarda o usuário pressionar a tecla enter e, quando um comando é inserido, como o PID do processo
+e o número do sinal desejado, o código analisa e envia o sinal para o processo correspondente.
+
+O código principal cria duas threads, uma para cada função e
+aguarda o término da thread de print_table antes de encerrar o programa.
