@@ -13,11 +13,13 @@ Preencha as linhas abaixo com o nome e o e-mail dos integrantes do
 grupo.  Substitua XX pela contribuição de cada membro do grupo no
 desenvolvimento do trabalho.
 
-Nome <email@domain.br> XX%
-Nome <giovana2ma@gmail.com> XX%
+Igor Joaquim da Silva Costa		igor.joaquim@dcc.ufmg.br 	50%
+Giovana Assis Matta Machado 	giovana2ma@gmail.com	50%
 
 3. Referências bibliográficas
 
+https://linux.die.net/man/2/pipe
+https://www.man7.org/linux/man-pages/man2/dup.2.html
 https://man7.org/linux/man-pages/man5/proc.5.html
 https://www.youtube.com/watch?v=CxcXSiw6XUg
 https://blog.4linux.com.br/conheca-kernel-linux-pelo-proc-parte-1/#:~:text=O%20%E2%80%9C%2Fproc%E2%80%9D%20ou%20%E2%80%9C,Linux%20em%20formato%20de%20arquivos.
@@ -25,24 +27,66 @@ https://linux.die.net/man/2/kill
 
 4. Estruturas de dados
 
+Implementação do shell simplificado:
+
+O código fornecido em sh.c é uma implementação de um shell simples em C, capaz de executar programas, 
+redirecionar I/O em arquivos e efetivar uma comunicação entre processos via pipes. 
+O objetivo principal dessa implementação é explorar conceitos relacionados a estruturas de processos do kernel, 
+proporcionando uma prática sobre o uso de chamadas de sistema em aplicações reais. 
+
+Dito isso, a implementação de cada uma das funcionalidades está contida em um fluxo de execução independente, 
+sendo eles: 
+
+Execução de programas: Neste caso, o shell implementado lida com comandos que consistem na execução de um único 
+programa. O caminho do programa é construído a partir dos argumentos passados na linha de comando. 
+Posteriormente, a função execv é usada para substituir o processo atual pelo programa especificado. 
+Caso o programa passado não exista, nada é retornado.
+
+Redirecionamento de Entrada/Saída: Primeiramente, o arquivo especificado é utilizado em algum modo de abertura 
+(leitura ou escrita). Em seguida, a entrada ou saída padrão do processo é redirecionada para o arquivo apresentado. 
+Por fim, a função runcmd é chamada para executar o comando relacionado.
+
+Pipes: Este caso lida com comandos que fazem uso de pipes para a comunicação entre processos. 
+Pipes são arrays de 2 descritores, inicializados por uma system call; 
+É criado um pipe para estabelecer a comunicação entre dois processos e, em seguida, 
+cada processo filho é atribuído com sua parte do pipe. A saída do processo à esquerda é redirecionada 
+para a entrada do processo à direita por meio do pipe. A função runcmd é utilizada para executar os comandos 
+à esquerda e à direita do pipe. Por fim, o código aguarda que os processos filhos terminem antes de concluir 
+a execução do comando.
+
+
+Implementação do htop:
+
 O código fornecido em meutop.c é uma implementação simplificada do htop, ferramenta 
-de monitoramento de processos em sistemas Unix/Linux. Nesta implementação, threads são usadas 
-para atualizar a tabela de processos e permitir que o usuário envie sinais para processos em execução.
+de monitoramento de processos em sistemas Unix/Linux. Nesta implementação, 
+threads são usadas para atualizar a tabela de processos e permitir que o usuário envie sinais para processos 
+em execução, concorrentemente.
 
-A estrutura do código é dividida em três threads principais: a thread de print_table, 
-que atualiza a tabela de processos, a thread de mysignal, que permite o envio de sinais para processos, 
-e a função main, que coordena as threads.
+A estrutura do código é dividida em duas threads principais: print_table e my_signal, 
+onde a primeira atualiza a tabela de processos e a segunda permite o envio de sinais para processos em execução.
 
-A thread de print_table é responsável por atualizar a tabela de processos. 
-A cada segundo, ela bloqueia o mutex tela para evitar conflitos de acesso à tela, limpa a tela do terminal, 
-imprime um cabeçalho para a tabela e, em seguida, abre o diretório /proc para listar processos. 
-Ela lê informações dos processos, como PID, nome do usuário, nome do processo e estado, 
-a partir dos arquivos em /proc. Essas informações são exibidas na tela, e a tabela é atualizada continuamente. 
-Após a atualização, o mutex é liberado para permitir que outras threads acessem a tela.
+A thread print_table tem a responsabilidade de manter a tabela de processos atualizada na tela. 
+Para garantir esse funcionamento, a saída do programa é entendida como um recurso compartilhado, 
+sendo operacionalizada por meio de uma seção crítica. 
+Inicialmente, a thread entra na seção crítica para prevenir conflitos de acesso à tela. 
+Em seguida, o terminal é limpo e a tabela é impressa. O conteúdo da tabela é a lista dos processos presentes 
+no diretório /proc, compostos por PID, nome do usuário, nome do processo e estado.
+Após a atualização, acaba a sessão crítica, permitindo que outras threads acessem a tela sem interferências. 
 
 A thread de mysignal permite ao usuário enviar sinais para processos em execução. 
-Ela aguarda o usuário pressionar a tecla enter e, quando um comando é inserido, como o PID do processo
-e o número do sinal desejado, o código analisa e envia o sinal para o processo correspondente.
+Ela aguarda o usuário pressionar a tecla enter para começar a seção crítica, 
+após o comando ser inserido, é esperado o PID do processo e o número do sinal desejado. 
+Posteriormente a thread envia o sinal para o processo correspondente e sai da sessão crítica.
 
-O código principal cria duas threads, uma para cada função e
-aguarda o término da thread de print_table antes de encerrar o programa.
+Por fim, o código principal cria as duas threads, e aguarda o término da 
+thread print_table para encerrar o programa.
+
+Conclusão
+
+Chamadas de sistemas e threads são blocos fundamentais para o desenvolvimento de aplicações que fazem o 
+melhor uso dos recursos computacionais disponíveis. O sistema operacional é capaz de prover grande suporte 
+tanto para a construção de programas I/O, quanto para programas que gerenciam as partes do sistema. 
+Sendo assim, é de grande aprendizado o entendimento de como um shell funcional faz uso de system calls para 
+prover funcionalidades para os usuários e de como essas system calls podem ser usadas para expandir os poderes de 
+uma aplicação. Da mesma forma, a eficiência do sistema operacional em lidar com threads e processos concorrentes 
+traz grande expressividade para os processos em execução, sendo facilitado o uso desses conceitos.
