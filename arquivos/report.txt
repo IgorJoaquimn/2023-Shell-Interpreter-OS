@@ -89,6 +89,6 @@ tanto para a construção de programas I/O, quanto para programas que gerenciam 
 Sendo assim, é de grande aprendizado o entendimento de como um shell funcional faz uso de system calls para 
 prover funcionalidades para os usuários e de como essas system calls podem ser usadas para expandir os poderes de 
 uma aplicação. Da mesma forma, a eficiência do sistema operacional em lidar com threads e processos concorrentes 
-traz grande expressividade para os processos em execução, sendo facilitado o uso desses conceitos.Por fim, conclui-se
+traz grande expressividade para os processos em execução, sendo facilitado o uso desses conceitos. Por fim, conclui-se
 que com grandes poderes vem grandes responsabilidades.
 
