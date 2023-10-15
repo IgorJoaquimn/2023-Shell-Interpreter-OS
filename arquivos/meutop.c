@@ -7,6 +7,9 @@
 #include <pthread.h>
 
 static pthread_t table;
+static pthread_t keyboard;
+static pthread_mutex_t tela = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t signal_lock = PTHREAD_MUTEX_INITIALIZER; // Mutex para controlar o sinal
 
 void print_header() {
     printf("PID   | User      | PROCNAME | Estado |\n");
@@ -53,6 +56,7 @@ void print_process_info(const char *pid) {
 
 void print_table(){
   while (1){
+    pthread_mutex_lock(&tela);
     system("clear");  
     print_header();
     
@@ -72,11 +76,34 @@ void print_table(){
         }
         closedir(dir);
     }
+    pthread_mutex_unlock(&tela);
     sleep(1);
   }
 }
+
+void signal(){
+
+    char buffer[1024];
+    int signal_handler = 0;
+    int pid;
+
+    while(1){
+        fgets(buffer,1024,stdin);
+        pthread_mutex_lock(&tela);
+        signal_handler = 1;
+        while(signal_handler){
+            fgets(buffer,1024,stdin);
+            signal_handler = 0;
+        }
+        pthread_mutex_unlock(&tela);
+    }
+
+}
+
 int main() {
+
     pthread_create(&table,NULL,(void *) print_table, NULL);
+    pthread_create(&keyboard,NULL,(void *) signal, NULL);
     pthread_join(table,NULL);
 
     return 0;
